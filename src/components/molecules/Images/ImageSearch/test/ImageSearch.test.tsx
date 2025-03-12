@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 
@@ -17,7 +19,13 @@ jest.mock('@hooks/Images/useSearchImages', () => ({
 }));
 
 jest.mock('@ui/button', () => ({
-  Button: ({ children, ...props }: any) => (
+  Button: ({
+    children,
+    ...props
+  }: {
+    children: ReactNode;
+    [key: string]: any;
+  }) => (
     <button data-testid="search-button" {...props}>
       {children}
     </button>
@@ -25,7 +33,9 @@ jest.mock('@ui/button', () => ({
 }));
 
 jest.mock('@ui/input', () => ({
-  Input: (props: any) => <input data-testid="search-input" {...props} />,
+  Input: (props: { [key: string]: any }) => (
+    <input data-testid="search-input" {...props} />
+  ),
 }));
 
 jest.mock('@ui/skeleton', () => ({
@@ -33,14 +43,16 @@ jest.mock('@ui/skeleton', () => ({
 }));
 
 jest.mock('@ui/tabs', () => ({
-  Tabs: ({ children }: any) => <div data-testid="tabs">{children}</div>,
-  TabsContent: ({ children }: any) => (
+  Tabs: ({ children }: { children: ReactNode }) => (
+    <div data-testid="tabs">{children}</div>
+  ),
+  TabsContent: ({ children }: { children: ReactNode }) => (
     <div data-testid="tabs-content">{children}</div>
   ),
-  TabsList: ({ children }: any) => (
+  TabsList: ({ children }: { children: ReactNode }) => (
     <div data-testid="tabs-list">{children}</div>
   ),
-  TabsTrigger: ({ children }: any) => (
+  TabsTrigger: ({ children }: { children: ReactNode }) => (
     <div data-testid="tabs-trigger">{children}</div>
   ),
 }));

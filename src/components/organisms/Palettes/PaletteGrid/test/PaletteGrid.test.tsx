@@ -1,7 +1,19 @@
+import type { SortOption } from '@lib/types';
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 
 import { PaletteGrid } from '../PaletteGrid';
+
+const defaultProps = {
+  view: 'grid' as const,
+  setView: jest.fn(),
+  sortOption: {
+    field: 'name',
+    direction: 'asc' as const,
+    label: 'Name (A-Z)',
+  } satisfies SortOption,
+  setSortOption: jest.fn(),
+};
 
 // Mock do componente PaletteGrid
 jest.mock('../PaletteGrid', () => ({
@@ -43,7 +55,7 @@ jest.mock('next/navigation', () => ({
 
 describe('PaletteGrid', () => {
   it('mostra mensagem quando não há paletas', () => {
-    render(<PaletteGrid />);
+    render(<PaletteGrid {...defaultProps} />);
     expect(screen.getByText('No palettes found')).toBeInTheDocument();
   });
 
@@ -71,7 +83,7 @@ describe('PaletteGrid', () => {
         setPalettes: jest.fn(),
       });
 
-    render(<PaletteGrid />);
+    render(<PaletteGrid {...defaultProps} />);
 
     expect(screen.getByText('Name: Paleta 1')).toBeInTheDocument();
     expect(screen.getByText('Colors: #FF0000, #00FF00')).toBeInTheDocument();

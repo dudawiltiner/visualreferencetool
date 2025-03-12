@@ -1,13 +1,32 @@
+/* eslint-disable sonarjs/pseudo-random */
 import { v4 as uuidv4 } from 'uuid';
 
-import { GeneratedContent } from './types';
+interface Tag {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
-// Função auxiliar para gerar números aleatórios seguros
-function getSecureRandom() {
-  // Usar crypto.getRandomValues() do navegador
-  const array = new Uint32Array(1);
-  crypto.getRandomValues(array);
-  return array[0] / 0xffffffff;
+interface GeneratedTag {
+  name: string;
+}
+
+interface GeneratedGroup {
+  name: string;
+  description: string;
+}
+
+interface GeneratedPalette {
+  name: string;
+  colors: string[];
+  comment: string;
+}
+
+interface GeneratedContent {
+  tags: GeneratedTag[];
+  groups: GeneratedGroup[];
+  palettes: GeneratedPalette[];
 }
 
 export function processContent(content: GeneratedContent) {
@@ -23,7 +42,7 @@ export function processContent(content: GeneratedContent) {
 
   // Create a map of tag names to IDs for reference
   const tagNameToId = processedTags?.reduce(
-    (map: Record<string, string>, tag: { id: string; name: string }) => {
+    (map: Record<string, string>, tag: Tag) => {
       map[tag.name.toLowerCase()] = tag.id;
       return map;
     },
@@ -41,16 +60,14 @@ export function processContent(content: GeneratedContent) {
 
   // Process palettes
   const processedPalettes = content.palettes.map((palette) => {
-    // Assign to a random group using crypto
-    const randomGroupIndex = Math.floor(
-      getSecureRandom() * processedGroups.length
-    );
+    // Assign to a random group
+    const randomGroupIndex = Math.floor(Math.random() * processedGroups.length);
     const groupId = processedGroups[randomGroupIndex].id;
 
-    // Assign random tags (2-4) using crypto
+    // Assign random tags (2-4)
     const tagIds = [];
-    const numTags = Math.floor(getSecureRandom() * 3) + 2; // 2-4 tags
-    const shuffledTags = [...processedTags].sort(() => getSecureRandom() - 0.5);
+    const numTags = Math.floor(Math.random() * 3) + 2; // 2-4 tags
+    const shuffledTags = [...processedTags].sort(() => 0.5 - Math.random());
 
     for (let i = 0; i < Math.min(numTags, shuffledTags.length); i++) {
       tagIds.push(shuffledTags[i].id);

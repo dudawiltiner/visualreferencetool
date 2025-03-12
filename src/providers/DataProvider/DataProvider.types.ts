@@ -1,4 +1,5 @@
-import type { Group, Image, Tag } from '@hooks/AI/useGenerateCompanyContent';
+import { Group, Image } from '@hooks/AI/useGenerateCompanyContent';
+import { Tag } from '@hooks/AI/useGenerateTags';
 
 import type { ColorPalette } from '@lib/types';
 

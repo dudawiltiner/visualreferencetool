@@ -1,20 +1,57 @@
-'use server';
-
 import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
+import { NextResponse } from 'next/server';
 
 import { processContent } from './processContent';
 import { processImages } from './processImages';
-import {
-  GenerateCompanyContentResponse,
-  GeneratedContent,
-  Image,
-} from './types';
 
-export async function generateCompanyContentAction(
-  companyName: string
-): Promise<GenerateCompanyContentResponse> {
+interface RequestBody {
+  companyName: string;
+}
+
+interface GeneratedContent {
+  tags: { name: string }[];
+  groups: { name: string; description: string }[];
+  palettes: { name: string; colors: string[]; comment: string }[];
+  images: { title: string; comment: string; suggestedTags: string[] }[];
+}
+
+interface ProcessedImage {
+  id: string;
+  title: string;
+  url: string;
+  thumbnail: string;
+  comment: string;
+  tagIds: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export async function POST(request: Request) {
   try {
+    const { companyName } = (await request.json()) as RequestBody;
+
+    if (!companyName) {
+      return NextResponse.json(
+        { error: 'Company name is required' },
+        { status: 400 }
+      );
+    }
+
+    // Check if OpenAI API key is available
+    const apiKey = process.env.OPENAI_API_KEY;
+
+    if (!apiKey) {
+      return NextResponse.json(
+        {
+          error: 'OpenAI API key is missing',
+          message:
+            'Add OPENAI_API_KEY to environment variables to use this feature.',
+        },
+        { status: 400 }
+      );
+    }
+
     // Generate company content using OpenAI
     const { text } = await generateText({
       model: openai('gpt-4-turbo'),
@@ -31,7 +68,7 @@ export async function generateCompanyContentAction(
         
         4. Images: Suggest 5-8 types of images that would be relevant for this company (with descriptions and suggested tags).
         
-        Return the data in the following JSON format:
+        Return ONLY a valid JSON object in the following format, with no additional text or explanation:
         
         {
           "palettes": [
@@ -60,45 +97,44 @@ export async function generateCompanyContentAction(
             }
           ]
         }
-        
-        Be creative but realistic, and ensure the content matches the company's likely brand identity based on their industry and name.
       `,
     });
 
     // Parse the response to get the content
     let content: GeneratedContent;
     try {
-      // Extract the JSON object from the response using a safe regex pattern
-      const jsonString = text.match(/\{(?:[^{}]|{[^{}]*})*\}/)?.[0];
-      if (jsonString) {
-        content = JSON.parse(jsonString);
-      } else {
-        throw new Error('Failed to parse JSON from response');
-      }
+      const trimmedText = text.trim();
+      content = JSON.parse(trimmedText);
     } catch (error) {
       console.error('Error parsing content:', error);
-      throw new Error('Failed to parse generated content');
+      return NextResponse.json(
+        { error: 'Failed to parse generated content' },
+        { status: 500 }
+      );
     }
 
     // Process content (tags, groups, palettes)
     const { tags, groups, palettes, tagNameToId } = processContent(content);
 
     // Process images
-    let images: Image[] = [];
+    let images: ProcessedImage[] = [];
     try {
-      images = await processImages(companyName, content, tagNameToId, groups);
+      images = await processImages(companyName, content, tagNameToId);
     } catch (error: any) {
       console.warn('Error processing images:', error.message);
     }
 
-    return {
+    return NextResponse.json({
       tags,
       groups,
       palettes,
       images,
-    };
+    });
   } catch (error: any) {
     console.error('Error generating content:', error);
-    throw new Error(error.message || 'Failed to generate content');
+    return NextResponse.json(
+      { error: error.message || 'Failed to generate content' },
+      { status: 500 }
+    );
   }
 }

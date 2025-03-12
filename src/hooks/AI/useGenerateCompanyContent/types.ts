@@ -64,6 +64,12 @@ export interface GeneratedPalette {
   comment: string;
 }
 
+export interface GeneratedContent {
+  tags: GeneratedTag[];
+  groups: GeneratedGroup[];
+  palettes: GeneratedPalette[];
+}
+
 export interface ImageContent {
   title: string;
   comment: string;
@@ -71,9 +77,6 @@ export interface ImageContent {
 }
 
 export interface GeneratedContent {
-  tags: GeneratedTag[];
-  groups: GeneratedGroup[];
-  palettes: GeneratedPalette[];
   images: ImageContent[];
 }
 

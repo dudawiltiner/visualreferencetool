@@ -25,6 +25,17 @@ const mockDataContext = {
   deletePalette: jest.fn(),
 };
 
+const mockInitialData = {
+  images: [],
+  setImages: jest.fn(),
+  palettes: [],
+  setPalettes: jest.fn(),
+  groups: [],
+  setGroups: jest.fn(),
+  tags: [],
+  setTags: jest.fn(),
+};
+
 jest.mock('../../../../../providers/DataProvider/DataProvider', () => ({
   ...jest.requireActual('../../../../../providers/DataProvider/DataProvider'),
   useData: () => mockDataContext,
@@ -33,7 +44,7 @@ jest.mock('../../../../../providers/DataProvider/DataProvider', () => ({
 describe('AddImageButton', () => {
   it('renders correctly', () => {
     render(
-      <DataProvider>
+      <DataProvider initialData={mockInitialData}>
         <AddImageButton />
       </DataProvider>
     );
@@ -44,7 +55,7 @@ describe('AddImageButton', () => {
   it('opens dialog when clicked', async () => {
     const user = userEvent.setup();
     render(
-      <DataProvider>
+      <DataProvider initialData={mockInitialData}>
         <AddImageButton />
       </DataProvider>
     );
