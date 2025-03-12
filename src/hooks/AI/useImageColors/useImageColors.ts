@@ -4,6 +4,16 @@ import { FastAverageColor } from 'fast-average-color';
 
 import { UseImageColorsOptions } from './types';
 
+// Função para validar se é uma URL válida
+const isValidUrl = (string: string): boolean => {
+  if (!string) return false;
+  try {
+    return Boolean(new URL(string));
+  } catch {
+    return false;
+  }
+};
+
 // Lista de proxies alternativos
 const PROXY_URLS = [
   (url: string) =>
@@ -17,26 +27,6 @@ const PROXY_DOMAINS = [
   'cors-anywhere.herokuapp.com',
   'codetabs.com',
 ];
-
-const addCorsProxy = (url: string) => {
-  // Retorna o primeiro proxy da lista
-  return PROXY_URLS[0](url);
-};
-
-// Lista de extensões suportadas
-const SUPPORTED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp'];
-
-// Função para verificar se a URL é de uma imagem suportada
-const isSupportedImageType = (url: string): boolean => {
-  const lowercaseUrl = url.toLowerCase();
-  return SUPPORTED_EXTENSIONS.some((ext) => lowercaseUrl.endsWith(ext));
-};
-
-// Função para extrair a extensão da URL
-const getFileExtension = (url: string): string => {
-  const match = url.match(/\.([^.]+)$/);
-  return match ? match[1].toLowerCase() : '';
-};
 
 // Função para determinar se uma cor é próxima do preto
 const isNearBlack = (r: number, g: number, b: number) => {
@@ -92,6 +82,16 @@ const loadImageWithProxy = async (
   });
 };
 
+// Função para verificar se a URL carrega uma imagem válida
+const isValidImageUrl = async (url: string): Promise<boolean> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(true);
+    img.onerror = () => resolve(false);
+    img.src = url;
+  });
+};
+
 export function useImageColors(
   imageUrl: string | null,
   options: UseImageColorsOptions = {}
@@ -108,10 +108,17 @@ export function useImageColors(
       return [];
     }
 
-    // Verificar se o tipo de imagem é suportado
-    if (!isSupportedImageType(imageUrl)) {
-      const extension = getFileExtension(imageUrl);
-      const errorMessage = `Formato de imagem não suportado: ${extension}. Por favor, use imagens nos formatos: ${SUPPORTED_EXTENSIONS.join(', ')}`;
+    // Verificar se é uma URL válida
+    if (!isValidUrl(imageUrl)) {
+      const errorMessage = 'URL inválida. Por favor, forneça uma URL válida.';
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    }
+
+    // Verificar se a URL carrega uma imagem válida
+    const isImage = await isValidImageUrl(imageUrl);
+    if (!isImage) {
+      const errorMessage = 'A URL fornecida não é uma imagem válida.';
       setError(errorMessage);
       throw new Error(errorMessage);
     }
