@@ -15,9 +15,8 @@ export function AIColorExtractor({
   onColorsExtracted,
 }: AIColorExtractorProps) {
   const { toast } = useToast();
-  const { isLoading, extractColors } = useImageColors({
-    imageUrl,
-    options: { manual: true },
+  const { isLoading, extractColors } = useImageColors(imageUrl, {
+    manual: true,
   });
 
   const handleExtractColors = async () => {
