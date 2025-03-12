@@ -1,0 +1,12 @@
+.container {
+  position: relative;
+  cursor: pointer;
+}
+
+.selectionMode {
+  cursor: pointer;
+}
+
+.selectionMode:hover {
+  opacity: 0.8;
+}
