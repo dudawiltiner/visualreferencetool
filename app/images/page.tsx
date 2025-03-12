@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 
 import { AddImageButton } from '@atoms/Images/AddImageButton/AddImageButton';
-import { FilterBar } from '@molecules/Images/FilterBar/FilterBar';
+import { FilterBarWrapper } from '@molecules/Images/FilterBar/FilterBarWrapper';
 import { ImageGrid } from '@organisms/Images/ImageGrid/ImageGrid';
 
 export default function ImagesPage() {
@@ -12,7 +12,7 @@ export default function ImagesPage() {
         <AddImageButton />
       </div>
       <Suspense fallback={<div>Loading filters...</div>}>
-        <FilterBar type="images" />
+        <FilterBarWrapper type="images" />
       </Suspense>
       <Suspense fallback={<div>Loading images...</div>}>
         <ImageGrid />
