@@ -6,10 +6,12 @@ import { AIColorExtractor } from '../AIColorExtractor';
 
 // Mock dos hooks
 const mockExtractColors = jest.fn();
-jest.mock('@hooks/AI/useExtractColors', () => ({
-  useExtractColors: () => ({
-    mutate: mockExtractColors,
-    isPending: false,
+jest.mock('@hooks/AI/useImageColors', () => ({
+  useImageColors: () => ({
+    extractColors: mockExtractColors,
+    isLoading: false,
+    error: null,
+    colors: [],
   }),
 }));
 
@@ -26,9 +28,7 @@ describe('AIColorExtractor', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockExtractColors.mockImplementation((_, { onSuccess }) =>
-      onSuccess({ colors: ['#FF0000', '#00FF00', '#0000FF'] })
-    );
+    mockExtractColors.mockResolvedValue(['#FF0000', '#00FF00', '#0000FF']);
   });
 
   it('renders correctly', () => {
@@ -57,7 +57,8 @@ describe('AIColorExtractor', () => {
       screen.getByRole('button', { name: /extract colors from image/i })
     );
 
-    expect(mockOnColorsExtracted).toHaveBeenCalledWith([
+    expect(mockExtractColors).toHaveBeenCalled();
+    await expect(mockOnColorsExtracted).toHaveBeenCalledWith([
       '#FF0000',
       '#00FF00',
       '#0000FF',

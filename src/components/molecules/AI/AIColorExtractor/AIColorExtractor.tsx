@@ -1,6 +1,6 @@
 'use client';
 
-import { useExtractColors } from '@hooks/AI/useExtractColors';
+import { useImageColors } from '@hooks/AI/useImageColors';
 import { useToast } from '@hooks/General/use-toast';
 
 import { Button } from '@ui/button';
@@ -15,7 +15,10 @@ export function AIColorExtractor({
   onColorsExtracted,
 }: AIColorExtractorProps) {
   const { toast } = useToast();
-  const { mutate: extractColors, isPending: isLoading } = useExtractColors();
+  const { isLoading, extractColors } = useImageColors({
+    imageUrl,
+    options: { manual: true },
+  });
 
   const handleExtractColors = async () => {
     if (!imageUrl) {
@@ -27,26 +30,22 @@ export function AIColorExtractor({
       return;
     }
 
-    extractColors(
-      { imageUrl },
-      {
-        onSuccess: (data) => {
-          onColorsExtracted(data.colors);
-          toast({
-            title: 'Colors extracted',
-            description: 'The colors have been added to your palette',
-            variant: 'default',
-          });
-        },
-        onError: (error) => {
-          toast({
-            title: 'Error extracting colors',
-            description: error.message || 'An error occurred',
-            variant: 'destructive',
-          });
-        },
-      }
-    );
+    try {
+      const colors = await extractColors();
+      onColorsExtracted(colors);
+      toast({
+        title: 'Colors extracted',
+        description: 'The colors have been added to your palette',
+        variant: 'default',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error extracting colors',
+        description:
+          error instanceof Error ? error.message : 'An error occurred',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (

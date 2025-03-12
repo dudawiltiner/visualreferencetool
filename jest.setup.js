@@ -48,5 +48,4 @@ jest.mock('next/navigation', () => ({
 jest.mock('@hooks/General/use-toast');
 jest.mock('@providers/DataProvider/DataProvider');
 jest.mock('@hooks/AI/useGenerateCompanyContent');
-jest.mock('@hooks/AI/useExtractColors');
 jest.mock('@hooks/Images/useSearchImages');
