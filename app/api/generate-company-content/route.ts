@@ -5,6 +5,9 @@ import { NextResponse } from 'next/server';
 import { processContent } from './processContent';
 import { processImages } from './processImages';
 
+// Configuração para usar Edge Runtime
+export const runtime = 'edge';
+
 interface RequestBody {
   companyName: string;
 }
@@ -132,17 +135,32 @@ export async function POST(request: Request) {
       console.warn('Error processing images:', error.message);
     }
 
-    return NextResponse.json({
-      tags,
-      groups,
-      palettes,
-      images,
-    });
+    // Retorna a resposta usando o Edge Runtime
+    return new NextResponse(
+      JSON.stringify({
+        tags,
+        groups,
+        palettes,
+        images,
+      }),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store, no-cache, must-revalidate',
+        },
+      }
+    );
   } catch (error: any) {
     console.error('Error generating content:', error);
-    return NextResponse.json(
-      { error: error.message || 'Failed to generate content' },
-      { status: 500 }
+    return new NextResponse(
+      JSON.stringify({ error: error.message || 'Failed to generate content' }),
+      {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
     );
   }
 }

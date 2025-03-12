@@ -1,0 +1,9 @@
+{
+  "functions": {
+    "app/api/generate-company-content/route.ts": {
+      "runtime": "edge",
+      "memory": 256,
+      "maxDuration": 180
+    }
+  }
+}
