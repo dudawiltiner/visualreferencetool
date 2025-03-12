@@ -33,7 +33,7 @@ export async function POST(request: Request) {
 
     // Generate color palette using OpenAI
     const { text } = await generateText({
-      model: openai('gpt-4'),
+      model: openai('gpt-4-turbo'),
       prompt: `
         Analyze this image: ${imageUrl} and extract a color palette that represents its key colors.
         Return ONLY a JSON array of 4-6 hex color codes, like this: ["#FFFFFF", "#000000"]

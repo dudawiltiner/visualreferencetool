@@ -54,7 +54,7 @@ export async function POST(request: Request) {
 
     // Generate company content using OpenAI
     const { text } = await generateText({
-      model: openai('gpt-4'),
+      model: openai('gpt-4-turbo'),
       prompt: `
         I need to create visual reference content for the company "${companyName}".
         

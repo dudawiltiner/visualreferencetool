@@ -45,7 +45,7 @@ export async function POST(request: Request) {
 
     // Generate tags using OpenAI
     const { text } = await generateText({
-      model: openai('gpt-4'),
+      model: openai('gpt-4-turbo'),
       prompt: `
         Analyze this image: ${imageUrl} and generate relevant tags.
         Return ONLY a JSON array of tag names, like this: ["tag1", "tag2"]
