@@ -1,31 +1,32 @@
 import { useMutation } from '@tanstack/react-query';
 
-import { fetchGenerateCompanyContent } from './fetchGenerateCompanyContent';
+import { generateCompanyContentAction } from './actions';
 import {
   GenerateCompanyContentError,
   GenerateCompanyContentRequest,
   GenerateCompanyContentResponse,
 } from './types';
 
-export const useGenerateCompanyContent = () => {
+export function useGenerateCompanyContent() {
   return useMutation<
     GenerateCompanyContentResponse,
     GenerateCompanyContentError,
     GenerateCompanyContentRequest
   >({
-    mutationFn: fetchGenerateCompanyContent,
-    onError: (error: GenerateCompanyContentError) => {
+    mutationFn: async ({ companyName }) => {
+      return generateCompanyContentAction(companyName);
+    },
+    onError: (error) => {
       console.error('Error generating company content:', error);
     },
   });
-};
+}
 
 export type {
   GenerateCompanyContentError,
   GenerateCompanyContentRequest,
   GenerateCompanyContentResponse,
   Group,
-  Image,
   Palette,
   Tag,
 } from './types';

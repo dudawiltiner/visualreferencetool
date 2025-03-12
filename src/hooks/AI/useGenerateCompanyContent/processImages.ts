@@ -1,38 +1,22 @@
+import { SearchImage } from '@hooks/Images/useSearchImages';
+
 import { v4 as uuidv4 } from 'uuid';
 
-interface GoogleSearchImage {
-  link: string;
-  title: string;
-  image?: {
-    thumbnailLink: string;
-  };
-}
+import { GeneratedContent, SearchResult } from './types';
 
-interface ImageContent {
-  title: string;
-  comment: string;
-  suggestedTags: string[];
-}
-
-interface GeneratedContent {
-  images: ImageContent[];
-}
-
-interface SearchImage {
-  url: string;
-  title: string;
-  thumbnail: string;
-}
-
-interface SearchResult {
-  term: string;
-  images: SearchImage[];
+// Função auxiliar para gerar números aleatórios seguros
+function getSecureRandom() {
+  // Usar crypto.getRandomValues() do navegador
+  const array = new Uint32Array(1);
+  crypto.getRandomValues(array);
+  return array[0] / 0xffffffff;
 }
 
 export async function processImages(
   companyName: string,
   content: GeneratedContent,
-  tagNameToId: Record<string, string>
+  tagNameToId: Record<string, string>,
+  groups: { id: string }[]
 ) {
   const API_KEY = process.env.GOOGLE_API_KEY;
   const SEARCH_ENGINE_ID = process.env.GOOGLE_SEARCH_ENGINE_ID;
@@ -75,7 +59,7 @@ export async function processImages(
       if (data.items && data.items.length > 0) {
         return {
           term,
-          images: data.items.map((item: GoogleSearchImage) => ({
+          images: data.items.map((item: any) => ({
             url: item.link,
             title: item.title || term,
             thumbnail: item.image?.thumbnailLink || item.link,
@@ -120,6 +104,9 @@ export async function processImages(
       .map((tag) => tagNameToId[tag.toLowerCase()])
       .filter(Boolean);
 
+    // Assign to a random group using crypto
+    const randomGroupIndex = Math.floor(getSecureRandom() * groups.length);
+
     return {
       id: uuidv4(),
       title: image.title,
@@ -127,6 +114,7 @@ export async function processImages(
       thumbnail: searchImage?.url || '',
       comment: image.comment,
       tagIds,
+      groupId: groups[randomGroupIndex].id,
       createdAt: now,
       updatedAt: now,
     };

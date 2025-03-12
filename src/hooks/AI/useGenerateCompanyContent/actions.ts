@@ -1,60 +1,20 @@
+'use server';
+
 import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
-import { NextResponse } from 'next/server';
 
 import { processContent } from './processContent';
 import { processImages } from './processImages';
+import {
+  GenerateCompanyContentResponse,
+  GeneratedContent,
+  Image,
+} from './types';
 
-// Configuração para usar Edge Runtime
-export const runtime = 'edge';
-
-interface RequestBody {
-  companyName: string;
-}
-
-interface GeneratedContent {
-  tags: { name: string }[];
-  groups: { name: string; description: string }[];
-  palettes: { name: string; colors: string[]; comment: string }[];
-  images: { title: string; comment: string; suggestedTags: string[] }[];
-}
-
-interface ProcessedImage {
-  id: string;
-  title: string;
-  url: string;
-  thumbnail: string;
-  comment: string;
-  tagIds: string[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-export async function POST(request: Request) {
+export async function generateCompanyContentAction(
+  companyName: string
+): Promise<GenerateCompanyContentResponse> {
   try {
-    const { companyName } = (await request.json()) as RequestBody;
-
-    if (!companyName) {
-      return NextResponse.json(
-        { error: 'Company name is required' },
-        { status: 400 }
-      );
-    }
-
-    // Check if OpenAI API key is available
-    const apiKey = process.env.OPENAI_API_KEY;
-
-    if (!apiKey) {
-      return NextResponse.json(
-        {
-          error: 'OpenAI API key is missing',
-          message:
-            'Add OPENAI_API_KEY to environment variables to use this feature.',
-        },
-        { status: 400 }
-      );
-    }
-
     // Generate company content using OpenAI
     const { text } = await generateText({
       model: openai('gpt-4-turbo'),
@@ -108,59 +68,37 @@ export async function POST(request: Request) {
     // Parse the response to get the content
     let content: GeneratedContent;
     try {
-      // Extract the JSON object from the response
-      // eslint-disable-next-line sonarjs/slow-regex
-      const jsonMatch = text.match(/\{[\s\S]*\}/m);
-      if (jsonMatch) {
-        content = JSON.parse(jsonMatch[0]);
+      // Extract the JSON object from the response using a safe regex pattern
+      const jsonString = text.match(/\{(?:[^{}]|{[^{}]*})*\}/)?.[0];
+      if (jsonString) {
+        content = JSON.parse(jsonString);
       } else {
         throw new Error('Failed to parse JSON from response');
       }
     } catch (error) {
       console.error('Error parsing content:', error);
-      return NextResponse.json(
-        { error: 'Failed to parse generated content' },
-        { status: 500 }
-      );
+      throw new Error('Failed to parse generated content');
     }
 
     // Process content (tags, groups, palettes)
     const { tags, groups, palettes, tagNameToId } = processContent(content);
 
     // Process images
-    let images: ProcessedImage[] = [];
+    let images: Image[] = [];
     try {
-      images = await processImages(companyName, content, tagNameToId);
+      images = await processImages(companyName, content, tagNameToId, groups);
     } catch (error: any) {
       console.warn('Error processing images:', error.message);
     }
 
-    // Retorna a resposta usando o Edge Runtime
-    return new NextResponse(
-      JSON.stringify({
-        tags,
-        groups,
-        palettes,
-        images,
-      }),
-      {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-store, no-cache, must-revalidate',
-        },
-      }
-    );
+    return {
+      tags,
+      groups,
+      palettes,
+      images,
+    };
   } catch (error: any) {
     console.error('Error generating content:', error);
-    return new NextResponse(
-      JSON.stringify({ error: error.message || 'Failed to generate content' }),
-      {
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    throw new Error(error.message || 'Failed to generate content');
   }
 }
