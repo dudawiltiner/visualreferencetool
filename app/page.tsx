@@ -1,6 +1,5 @@
 import { CompanyContentGenerator } from '@molecules/AI/CompanyContentGenerator/CompanyContentGenerator';
-import { DashboardStats } from '@organisms/Dashboard/DashboardStats/DashboardStats';
-import { RecentItems } from '@organisms/Dashboard/RecentItems/RecentItems';
+import { DashboardContent } from '@organisms/Dashboard/DashboardContent/DashboardContent';
 
 export default function Home() {
   return (
@@ -9,8 +8,7 @@ export default function Home() {
         <h1 className="text-3xl font-bold">Dashboard</h1>
         <CompanyContentGenerator />
       </div>
-      <DashboardStats />
-      <RecentItems />
+      <DashboardContent />
     </div>
   );
 }

@@ -9,10 +9,9 @@ import { SortOptions } from '@molecules/General/SortOptions/SortOptions';
 import { SortOption } from '@molecules/General/SortOptions/SortOptions.types';
 import { ImageCard } from '@molecules/Images/ImageCard/ImageCard';
 import { MultiSelectActions } from '@molecules/Selection/MultiSelectActions/MultiSelectActions';
+import { useData } from '@providers/DataProvider/DataProvider';
 import { Checkbox } from '@ui/checkbox';
 import { useSearchParams } from 'next/navigation';
-
-import { useData } from '../../../../providers/DataProvider/DataProvider';
 
 export function ImageGrid() {
   const { images, setImages } = useData();

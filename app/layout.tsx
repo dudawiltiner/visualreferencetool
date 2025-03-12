@@ -1,7 +1,7 @@
 import type React from 'react';
 
 import { Sidebar } from '@molecules/Navigation/Sidebar/Sidebar';
-import { DataProvider } from '@providers/DataProvider/DataProvider';
+import { DataProviderWrapper } from '@providers/DataProvider/DataProviderWrapper';
 import { ReactQueryProvider } from '@providers/ReactQueryProvider/ReactQueryProvider';
 import '@styles/globals.css';
 import { Toaster } from '@ui/toaster';
@@ -25,7 +25,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <ReactQueryProvider>
-          <DataProvider>
+          <DataProviderWrapper>
             <div className="flex h-screen">
               <Sidebar />
               <main className="flex-1 overflow-y-auto p-6 h-screen">
@@ -33,7 +33,7 @@ export default function RootLayout({
               </main>
             </div>
             <Toaster />
-          </DataProvider>
+          </DataProviderWrapper>
         </ReactQueryProvider>
       </body>
     </html>

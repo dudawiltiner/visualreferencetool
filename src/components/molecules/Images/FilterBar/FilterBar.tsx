@@ -4,7 +4,6 @@ import type React from 'react';
 import { useEffect, useState } from 'react';
 
 import type { Group, Tag } from '@lib/types';
-import { useLocalStorage } from '@lib/use-local-storage';
 import { Button } from '@ui/button';
 import { Input } from '@ui/input';
 import {
@@ -19,18 +18,22 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 interface FilterBarProps {
   type: 'images' | 'palettes';
+  initialGroups: Group[];
+  initialTags: Tag[];
 }
 
-export function FilterBar({ type }: FilterBarProps) {
-  const [groups] = useLocalStorage<Group[]>('groups', []);
-  const [tags] = useLocalStorage<Tag[]>('tags', []);
+export function FilterBar({
+  type,
+  initialGroups,
+  initialTags,
+}: FilterBarProps) {
   const [searchValue, setSearchValue] = useState('');
 
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const currentGroup = searchParams.get('group') || '';
-  const currentTag = searchParams.get('tag') || '';
+  const currentGroup = searchParams.get('group') || 'all';
+  const currentTag = searchParams.get('tag') || 'all';
   const currentSearch = searchParams.get('q') || '';
 
   useEffect(() => {
@@ -41,7 +44,7 @@ export function FilterBar({ type }: FilterBarProps) {
     const newParams = new URLSearchParams(searchParams.toString());
 
     Object.entries(params).forEach(([key, value]) => {
-      if (value) {
+      if (value && value !== 'all') {
         newParams.set(key, value);
       } else {
         newParams.delete(key);
@@ -64,60 +67,61 @@ export function FilterBar({ type }: FilterBarProps) {
   const hasActiveFilters = currentGroup || currentTag || currentSearch;
 
   return (
-    <div className="flex flex-col sm:flex-row gap-4">
-      <form onSubmit={handleSearch} className="flex-1 flex gap-2">
-        <Input
-          placeholder="Search..."
-          value={searchValue}
-          onChange={(e) => setSearchValue(e.target.value)}
-          className="flex-1"
-        />
-        <Button type="submit" size="icon">
-          <Search className="h-4 w-4" />
-        </Button>
-      </form>
-
-      <div className="flex gap-2">
+    <div className="flex flex-col gap-4">
+      <form onSubmit={handleSearch} className="flex gap-2">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Input
+            type="text"
+            placeholder={`Search ${type}...`}
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            className="pl-9"
+          />
+        </div>
         <Select
           value={currentGroup}
           onValueChange={(value) => updateFilters({ group: value })}
         >
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select group" />
+            <SelectValue placeholder="All Groups" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All groups</SelectItem>
-            {groups.map((group) => (
+            <SelectItem value="all">All Groups</SelectItem>
+            {initialGroups?.map((group) => (
               <SelectItem key={group.id} value={group.id}>
                 {group.name}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-
         <Select
           value={currentTag}
           onValueChange={(value) => updateFilters({ tag: value })}
         >
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select tag" />
+            <SelectValue placeholder="All Tags" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All tags</SelectItem>
-            {tags.map((tag) => (
+            <SelectItem value="all">All Tags</SelectItem>
+            {initialTags?.map((tag) => (
               <SelectItem key={tag.id} value={tag.id}>
                 {tag.name}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-
         {hasActiveFilters && (
-          <Button variant="ghost" size="icon" onClick={handleClearFilters}>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleClearFilters}
+            type="button"
+          >
             <X className="h-4 w-4" />
           </Button>
         )}
-      </div>
+      </form>
     </div>
   );
 }

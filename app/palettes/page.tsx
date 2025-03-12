@@ -1,7 +1,6 @@
 import { AddPaletteButton } from '@atoms/Palettes/AddPaletteButton/AddPaletteButton';
-import { FilterBar } from '@molecules/Images/FilterBar/FilterBar';
 import { PaletteExportImport } from '@molecules/Palettes/PaletteExportImport/PaletteExportImport';
-import { PaletteGrid } from '@organisms/Palettes/PaletteGrid/PaletteGrid';
+import { PalettesContent } from '@organisms/Palettes/PalettesContent/PalettesContent';
 
 export default function PalettesPage() {
   return (
@@ -13,8 +12,7 @@ export default function PalettesPage() {
           <AddPaletteButton />
         </div>
       </div>
-      <FilterBar type="palettes" />
-      <PaletteGrid />
+      <PalettesContent />
     </div>
   );
 }

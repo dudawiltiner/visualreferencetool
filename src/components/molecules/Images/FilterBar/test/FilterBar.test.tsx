@@ -28,21 +28,44 @@ jest.mock('@ui/input', () => ({
 }));
 
 jest.mock('@ui/select', () => ({
-  Select: ({ children }: any) => <div>{children}</div>,
-  SelectTrigger: ({ children }: any) => <div>{children}</div>,
-  SelectValue: ({ children, placeholder }: any) => (
-    <div>{children || placeholder}</div>
+  Select: ({ children }: any) => <div data-testid="select">{children}</div>,
+  SelectTrigger: ({ children }: any) => (
+    <div data-testid="select-trigger">{children}</div>
   ),
-  SelectContent: ({ children }: any) => <div>{children}</div>,
-  SelectItem: ({ children }: any) => <div>{children}</div>,
+  SelectValue: ({ children, placeholder }: any) => (
+    <div data-testid="select-value">{children || placeholder}</div>
+  ),
+  SelectContent: ({ children }: any) => (
+    <div data-testid="select-content" style={{ display: 'none' }}>
+      {children}
+    </div>
+  ),
+  SelectItem: ({ children, value }: any) => (
+    <div data-testid="select-item" data-value={value}>
+      {children}
+    </div>
+  ),
 }));
 
 describe('FilterBar', () => {
-  it('renders search form and filters', () => {
-    render(<FilterBar type="images" />);
+  const mockProps = {
+    type: 'images' as const,
+    initialGroups: [],
+    initialTags: [],
+  };
 
-    expect(screen.getByPlaceholderText('Search...')).toBeInTheDocument();
-    expect(screen.getByText('Select group')).toBeInTheDocument();
-    expect(screen.getByText('Select tag')).toBeInTheDocument();
+  it('renders search form and filters', () => {
+    render(<FilterBar {...mockProps} />);
+
+    expect(screen.getByPlaceholderText('Search images...')).toBeInTheDocument();
+    const selectValues = screen.getAllByTestId('select-value');
+    expect(selectValues[0]).toHaveTextContent('All Groups');
+    expect(selectValues[1]).toHaveTextContent('All Tags');
+
+    const selectItems = screen.getAllByTestId('select-item');
+    expect(selectItems[0]).toHaveTextContent('All Groups');
+    expect(selectItems[0]).toHaveAttribute('data-value', 'all');
+    expect(selectItems[1]).toHaveTextContent('All Tags');
+    expect(selectItems[1]).toHaveAttribute('data-value', 'all');
   });
 });

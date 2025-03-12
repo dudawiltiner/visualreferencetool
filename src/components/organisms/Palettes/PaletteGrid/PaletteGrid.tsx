@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 
 import type { ColorPalette, SortOption } from '@lib/types';
-import { useLocalStorage } from '@lib/use-local-storage';
 import { SortOptions } from '@molecules/General/SortOptions/SortOptions';
 import { PaletteViewSwitcher } from '@molecules/Palettes/PaletteViewSwitcher/PaletteViewSwitcher';
 import { SelectablePaletteCard } from '@molecules/Palettes/SelectablePaletteCard/SelectablePaletteCard';
@@ -14,20 +13,21 @@ import { PaletteDetailsView } from '@organisms/Palettes/PaletteDetailsView/Palet
 import { useData } from '@providers/DataProvider/DataProvider';
 import { useSearchParams } from 'next/navigation';
 
-export function PaletteGrid() {
+interface PaletteGridProps {
+  view: 'grid' | 'list' | 'columns' | 'details';
+  setView: (view: 'grid' | 'list' | 'columns' | 'details') => void;
+  sortOption: SortOption;
+  setSortOption: (sortOption: SortOption) => void;
+}
+
+export function PaletteGrid({
+  view,
+  setView,
+  sortOption,
+  setSortOption,
+}: PaletteGridProps) {
   const { palettes, setPalettes } = useData();
   const [filteredPalettes, setFilteredPalettes] = useState<ColorPalette[]>([]);
-  const [view, setView] = useLocalStorage<
-    'grid' | 'list' | 'columns' | 'details'
-  >('paletteView', 'grid');
-  const [sortOption, setSortOption] = useLocalStorage<SortOption>(
-    'paletteSort',
-    {
-      field: 'updatedAt',
-      direction: 'desc',
-      label: 'Last Updated',
-    }
-  );
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [selectionMode, setSelectionMode] = useState(false);
   const searchParams = useSearchParams();
