@@ -4,9 +4,23 @@ import { FastAverageColor } from 'fast-average-color';
 
 import { UseImageColorsOptions } from './types';
 
+// Lista de proxies alternativos
+const PROXY_URLS = [
+  (url: string) =>
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  (url: string) => `https://cors-anywhere.herokuapp.com/${url}`,
+  (url: string) => `https://api.codetabs.com/v1/proxy?quest=${url}`,
+];
+
+const PROXY_DOMAINS = [
+  'allorigins.win',
+  'cors-anywhere.herokuapp.com',
+  'codetabs.com',
+];
+
 const addCorsProxy = (url: string) => {
-  // Usando o proxy mais confiável
-  return `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+  // Retorna o primeiro proxy da lista
+  return PROXY_URLS[0](url);
 };
 
 // Lista de extensões suportadas
@@ -50,6 +64,34 @@ const hexToRgb = (hex: string) => {
   return { r, g, b };
 };
 
+const loadImageWithProxy = async (
+  imageUrl: string
+): Promise<HTMLImageElement> => {
+  const img = new Image();
+  img.crossOrigin = 'Anonymous';
+
+  return new Promise((resolve, reject) => {
+    img.onload = () => resolve(img);
+    img.onerror = () => {
+      const currentProxy = img.src;
+      const proxyIndex = PROXY_DOMAINS.findIndex((proxy) =>
+        currentProxy.includes(proxy)
+      );
+
+      if (proxyIndex >= 0 && proxyIndex < PROXY_URLS.length - 1) {
+        // Tenta o próximo proxy
+        const nextProxyUrl = PROXY_URLS[proxyIndex + 1](imageUrl);
+        img.src = nextProxyUrl;
+      } else {
+        // Se todos os proxies falharem, tenta sem proxy
+        img.src = imageUrl;
+      }
+    };
+    // Começa com o primeiro proxy
+    img.src = PROXY_URLS[0](imageUrl);
+  });
+};
+
 export function useImageColors(
   imageUrl: string | null,
   options: UseImageColorsOptions = {}
@@ -79,28 +121,7 @@ export function useImageColors(
       setError(null);
 
       const fac = new FastAverageColor();
-
-      // Criar uma imagem para o FastAverageColor processar
-      const img = new Image();
-      img.crossOrigin = 'Anonymous';
-
-      await new Promise((resolve, reject) => {
-        img.onload = resolve;
-        img.onerror = (e) => {
-          // Se falhar com o proxy, tenta sem ele
-          if (img.src.includes('allorigins.win')) {
-            img.src = imageUrl;
-          } else {
-            reject(
-              new Error(
-                'Não foi possível carregar a imagem. Verifique se a URL está correta e se a imagem está acessível.'
-              )
-            );
-          }
-        };
-        // Tenta primeiro com o proxy CORS
-        img.src = addCorsProxy(imageUrl);
-      });
+      const img = await loadImageWithProxy(imageUrl);
 
       // Analisar diferentes regiões da imagem
       const regions = [
